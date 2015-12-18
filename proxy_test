@@ -2,20 +2,24 @@
 
 <?php
 
-if(4 != $argc){
-	print "Usage $argv[0] \033[035mip \033[033mport \033[032muser:pass\033[0m\n";
+if(3 > $argc){
+	print "Usage $argv[0] \033[035mip \033[033mport [\033[032muser:pass\033[0m ] [\033[031mprobe site\033[0m default to https://google.com ]\n";
 	exit(0);
 }
 
-$c = curl_init('https://google.com');
+$c = curl_init(isset($argv[4]) ? $argv[4] : 'https://google.com');
 curl_setopt_array($c, [
-	CURLOPT_PROXY => $argv[1],
-	CURLOPT_PROXYPORT => $argv[2],
-	CURLOPT_PROXYTYPE => CURLPROXY_HTTP,
-	CURLOPT_PROXYUSERPWD => $argv[3],
-	CURLOPT_CONNECTTIMEOUT => 1,
-	CURLOPT_RETURNTRANSFER => true
-]);
+		CURLOPT_PROXY => $argv[1],
+		CURLOPT_PROXYPORT => $argv[2],
+		CURLOPT_PROXYTYPE => CURLPROXY_HTTP,
+		CURLOPT_CONNECTTIMEOUT => 1,
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_FOLLOWLOCATION => true
+		]);
+
+if(isset($argv[3])){
+	curl_setopt($c, CURLOPT_PROXYUSERPWD, $argv[3]);
+}
 curl_exec($c);
 
 $info = curl_getinfo($c);
