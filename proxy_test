@@ -1,0 +1,31 @@
+#!/usr/bin/env php
+
+<?php
+
+if(4 != $argc){
+	print "Usage $argv[0] \033[035mip \033[033mport \033[032muser:pass\033[0m\n";
+	exit(0);
+}
+
+$c = curl_init('https://google.com');
+curl_setopt_array($c, [
+	CURLOPT_PROXY => $argv[1],
+	CURLOPT_PROXYPORT => $argv[2],
+	CURLOPT_PROXYTYPE => CURLPROXY_HTTP,
+	CURLOPT_PROXYUSERPWD => $argv[3],
+	CURLOPT_CONNECTTIMEOUT => 1,
+	CURLOPT_RETURNTRANSFER => true
+]);
+curl_exec($c);
+
+$info = curl_getinfo($c);
+curl_close($c);
+
+if(200 != $info['http_code'])
+{
+	print "{$argv[1]}:{$argv[2]} \033[031mBAD\033[0m";
+	exit(1);
+}
+
+print "{$argv[1]}:{$argv[2]} \033[032mOK\033[0m";
+exit(0);
