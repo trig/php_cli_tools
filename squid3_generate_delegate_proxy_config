@@ -1,0 +1,41 @@
+#!/usr/bin/env php
+
+<?php
+
+/**
+ * Script will read through proxy servers list pick random one and generate squid3 compatible config
+ */
+if (3 > $argc) {
+    print "Usage $argv[0] \033[035m[proxies file ip:port\\n...] \033[032m[user:pass]\033[0m\n";
+    exit(0);
+}
+
+if (!is_file($argv[1]) || !is_readable($argv[1])) {
+    print "\033[031mFile {$argv[1]} not exists or not readable! \033[0m\n";
+    exit(1);
+}
+
+$proxies = array_map(function ($_) {
+    return trim($_);
+}, file($argv[1]));
+
+if (empty($proxies)) {
+    print "\033[031mFile {$argv[1]} is empty!\033[0m\n";
+    exit(1);
+}
+
+list($ip, $port) = explode(':', $proxies[array_rand($proxies)]);
+
+$config = <<< SQUID3_CONFIG
+http_access allow all
+http_port 3128
+cache_peer {$ip} parent {$port} 0 no-query default login={$argv[2]}
+dns_nameservers 8.8.8.8 8.8.4.4
+never_direct allow all
+forwarded_for off
+via off
+request_header_access X-Forwarded-For deny all
+SQUID3_CONFIG;
+
+print $config . PHP_EOL;
+exit(0);
